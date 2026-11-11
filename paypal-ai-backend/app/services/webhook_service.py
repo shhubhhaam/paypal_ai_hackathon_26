@@ -125,6 +125,8 @@ def process_paypal_event(
     # 5. Commit event and transaction together
     db.commit()
 
+    
+
     return {
         "message": "PayPal event processed",
         "event_id": event_id,

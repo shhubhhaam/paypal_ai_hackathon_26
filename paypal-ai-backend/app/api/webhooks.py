@@ -32,6 +32,10 @@ async def paypal_webhook(
         headers = dict(request.headers)
 
         # 4. Verify PayPal webhook signature
+
+        print("EVENT ID:", event.get("id"))
+        print("EVENT TYPE:", event.get("event_type"))
+        print("REQUEST HEADER NAMES:", list(headers.keys()))
         is_valid = verify_webhook_signature(
             headers,
             event

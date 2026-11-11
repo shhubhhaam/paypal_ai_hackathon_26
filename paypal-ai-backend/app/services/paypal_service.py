@@ -168,6 +168,9 @@ def verify_webhook_signature(headers, webhook_event):
 
         result = response.json()
 
+        print("PAYPAL VERIFICATION RESPONSE:", result)
+        print("CONFIGURED WEBHOOK ID PRESENT:", bool(PAYPAL_WEBHOOK_ID))
+
         verification_status = result.get(
             "verification_status"
         )
