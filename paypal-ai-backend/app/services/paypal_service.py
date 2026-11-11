@@ -156,6 +156,13 @@ def verify_webhook_signature(headers, webhook_event):
             timeout=30
         )
 
+        print("Verification URL:", verification_url)
+        print("Webhook ID:", PAYPAL_WEBHOOK_ID)
+        print("Event ID:", webhook_event.get("id"))
+        print("Event Type:", webhook_event.get("event_type"))
+        print("Transmission ID:", payload["transmission_id"])
+        print("Certificate URL:", payload["cert_url"])
+
         # Handle PayPal API errors
         if not response.ok:
 
