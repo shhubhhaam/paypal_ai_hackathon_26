@@ -28,6 +28,10 @@ async def paypal_webhook(
         # 2. Parse JSON
         event = json.loads(raw_body)
 
+        print("Raw body length:", len(raw_body))
+        print("Parsed event ID:", event.get("id"))
+        print("Parsed event type:", event.get("event_type"))
+
         # 3. Extract PayPal headers
         headers = dict(request.headers)
 

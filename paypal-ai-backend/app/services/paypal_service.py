@@ -97,11 +97,11 @@ def get_access_token():
 # Verify PayPal Webhook Signature
 # --------------------------------------------------
 
+
 def verify_webhook_signature(headers, webhook_event):
 
     validate_paypal_config()
 
-    # Required PayPal transmission headers
     required_headers = [
         "paypal-auth-algo",
         "paypal-cert-url",
@@ -110,13 +110,11 @@ def verify_webhook_signature(headers, webhook_event):
         "paypal-transmission-time"
     ]
 
-    # Normalize header names
     normalized_headers = {
         key.lower(): value
         for key, value in headers.items()
     }
 
-    # Check missing headers
     missing_headers = [
         header
         for header in required_headers
@@ -127,10 +125,8 @@ def verify_webhook_signature(headers, webhook_event):
         print("Missing PayPal headers:", missing_headers)
         return False
 
-    # Obtain OAuth access token
     access_token = get_access_token()
 
-    # Build verification payload
     payload = {
         "auth_algo": normalized_headers["paypal-auth-algo"],
         "cert_url": normalized_headers["paypal-cert-url"],
@@ -145,6 +141,16 @@ def verify_webhook_signature(headers, webhook_event):
         f"{PAYPAL_BASE_URL}/v1/notifications/verify-webhook-signature"
     )
 
+    print("\n--- PAYPAL VERIFICATION DIAGNOSTICS ---")
+    print("Environment:", "Sandbox" if "sandbox" in PAYPAL_BASE_URL else "Live")
+    print("Webhook ID configured:", bool(PAYPAL_WEBHOOK_ID))
+    print("Event ID:", webhook_event.get("id"))
+    print("Event Type:", webhook_event.get("event_type"))
+    print("Auth Algorithm:", payload["auth_algo"])
+    print("Transmission ID present:", bool(payload["transmission_id"]))
+    print("Certificate URL:", payload["cert_url"])
+    print("---------------------------------------\n")
+
     try:
         response = requests.post(
             verification_url,
@@ -156,37 +162,19 @@ def verify_webhook_signature(headers, webhook_event):
             timeout=30
         )
 
-        print("Verification URL:", verification_url)
-        print("Webhook ID:", PAYPAL_WEBHOOK_ID)
-        print("Event ID:", webhook_event.get("id"))
-        print("Event Type:", webhook_event.get("event_type"))
-        print("Transmission ID:", payload["transmission_id"])
-        print("Certificate URL:", payload["cert_url"])
+        print("PayPal HTTP Status:", response.status_code)
+        print("PayPal Raw Response:", response.text)
 
-        # Handle PayPal API errors
-        if not response.ok:
-
-            print("\n--- PayPal Webhook Verification Error ---")
-            print("HTTP Status:", response.status_code)
-            print("Response:", response.text)
-            print("-----------------------------------------\n")
-
-            response.raise_for_status()
+        response.raise_for_status()
 
         result = response.json()
 
-        print("PAYPAL VERIFICATION RESPONSE:", result)
-        print("CONFIGURED WEBHOOK ID PRESENT:", bool(PAYPAL_WEBHOOK_ID))
-
-        verification_status = result.get(
-            "verification_status"
-        )
+        verification_status = result.get("verification_status")
 
         print("Webhook Verification Status:", verification_status)
 
         return verification_status == "SUCCESS"
 
     except requests.RequestException as e:
-
-        print("Webhook Verification Request Failed:", repr(e))
+        print("PayPal Verification Request Error:", repr(e))
         raise
